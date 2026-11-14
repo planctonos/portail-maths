@@ -1,0 +1,125 @@
+[
+  {
+    "id": "trigo-master",
+    "titre": "Trigo Master",
+    "description": "Entraînement interactif sur le cercle trigonométrique, le placement des angles remarquables en radians, cosinus/sinus et la résolution d'équations.",
+    "niveaux": [
+      "1re Spé",
+      "Terminale"
+    ],
+    "theme": "Trigonométrie",
+    "url": "https://ton-utilisateur.github.io/trigo-master0/",
+    "icone": "compass",
+    "couleur": "indigo",
+    "motsCles": [
+      "cercle",
+      "radian",
+      "sinus",
+      "cosinus",
+      "angle",
+      "pi"
+    ]
+  },
+  {
+    "id": "cmr-simulation",
+    "titre": "Simulation Capture-Marquage-Recapture",
+    "description": "Modélisation visuelle de l'estimation d'une population animale par échantillonnage et calcul d'intervalles de confiance.",
+    "niveaux": [
+      "Terminale ES"
+    ],
+    "theme": "Probabilités & Stats",
+    "url": "https://ton-site.netlify.app/cmr-simulation",
+    "icone": "fish",
+    "couleur": "emerald",
+    "motsCles": [
+      "échantillon",
+      "fréquence",
+      "estimation",
+      "fluctuation",
+      "population"
+    ]
+  },
+  {
+    "id": "tableau-classe",
+    "titre": "Tableau & Gestion de Classe",
+    "description": "Outil de projection pour le vidéoprojecteur : minuteur visuel, tirage au sort d'élèves, niveau sonore et consignes de travail.",
+    "niveaux": [
+      "Outil Prof"
+    ],
+    "theme": "Gestion de classe",
+    "url": "https://ton-site.netlify.app/gestion-classe",
+    "icone": "presentation",
+    "couleur": "amber",
+    "motsCles": [
+      "timer",
+      "chronomètre",
+      "groupe",
+      "aléatoire",
+      "projection"
+    ]
+  },
+  {
+    "id": "automatismes-flash",
+    "titre": "Automatismes Flash",
+    "description": "Questions rapides chronométrées pour rituel de début de séance : calcul fractionnaire, puissances, pourcentages et dérivation.",
+    "niveaux": [
+      "2nde",
+      "1re ST2S",
+      "1re Spé"
+    ],
+    "theme": "Calcul & Algèbre",
+    "url": "https://ton-site.netlify.app/automatismes",
+    "icone": "zap",
+    "couleur": "rose",
+    "motsCles": [
+      "rituel",
+      "calcul mental",
+      "pourcentage",
+      "dérivée",
+      "fraction",
+      "épreuve"
+    ]
+  },
+  {
+    "id": "derivees-tangentes",
+    "titre": "Explorateur de Dérivées & Tangentes",
+    "description": "Visualisation dynamique du taux d'accroissement, du nombre dérivé comme pente de la tangente et des variations de fonctions.",
+    "niveaux": [
+      "1re ST2S",
+      "1re Spé",
+      "Terminale"
+    ],
+    "theme": "Analyse & Fonctions",
+    "url": "https://ton-site.netlify.app/derivees",
+    "icone": "trending-up",
+    "couleur": "sky",
+    "motsCles": [
+      "fonction",
+      "courbe",
+      "coefficient directeur",
+      "extremum",
+      "variation"
+    ]
+  },
+  {
+    "id": "suites-numeriques",
+    "titre": "Visualiseur de Suites Numériques",
+    "description": "Représentation graphique en escalier et en escargot des suites arithmétiques, géométriques et récurrentes.",
+    "niveaux": [
+      "1re Spé",
+      "1re ST2S",
+      "Terminale ES"
+    ],
+    "theme": "Analyse & Fonctions",
+    "url": "https://ton-site.netlify.app/suites",
+    "icone": "bar-chart-3",
+    "couleur": "violet",
+    "motsCles": [
+      "récurrence",
+      "limite",
+      "arithmétique",
+      "géométrique",
+      "terme"
+    ]
+  }
+]
