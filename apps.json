@@ -59,26 +59,5 @@
       "extremum",
       "variation"
     ]
-  },
-  {
-    "id": "suites-numeriques",
-    "titre": "Visualiseur de Suites Numériques",
-    "description": "Représentation graphique en escalier et en escargot des suites arithmétiques, géométriques et récurrentes.",
-    "niveaux": [
-      "1re Spé",
-      "1re ST2S",
-      "Terminale ES"
-    ],
-    "theme": "Analyse & Fonctions",
-    "url": "https://ton-site.netlify.app/suites",
-    "icone": "bar-chart-3",
-    "couleur": "violet",
-    "motsCles": [
-      "récurrence",
-      "limite",
-      "arithmétique",
-      "géométrique",
-      "terme"
-    ]
   }
 ]
