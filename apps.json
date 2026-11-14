@@ -39,48 +39,7 @@
       "population"
     ]
   },
-  {
-    "id": "tableau-classe",
-    "titre": "Tableau & Gestion de Classe",
-    "description": "Outil de projection pour le vidéoprojecteur : minuteur visuel, tirage au sort d'élèves, niveau sonore et consignes de travail.",
-    "niveaux": [
-      "Outil Prof"
-    ],
-    "theme": "Gestion de classe",
-    "url": "https://ton-site.netlify.app/gestion-classe",
-    "icone": "presentation",
-    "couleur": "amber",
-    "motsCles": [
-      "timer",
-      "chronomètre",
-      "groupe",
-      "aléatoire",
-      "projection"
-    ]
-  },
-  {
-    "id": "automatismes-flash",
-    "titre": "Automatismes Flash",
-    "description": "Questions rapides chronométrées pour rituel de début de séance : calcul fractionnaire, puissances, pourcentages et dérivation.",
-    "niveaux": [
-      "2nde",
-      "1re ST2S",
-      "1re Spé"
-    ],
-    "theme": "Calcul & Algèbre",
-    "url": "https://ton-site.netlify.app/automatismes",
-    "icone": "zap",
-    "couleur": "rose",
-    "motsCles": [
-      "rituel",
-      "calcul mental",
-      "pourcentage",
-      "dérivée",
-      "fraction",
-      "épreuve"
-    ]
-  },
-  {
+   {
     "id": "derivees-tangentes",
     "titre": "Explorateur de Dérivées & Tangentes",
     "description": "Visualisation dynamique du taux d'accroissement, du nombre dérivé comme pente de la tangente et des variations de fonctions.",
@@ -101,25 +60,4 @@
       "variation"
     ]
   },
-  {
-    "id": "suites-numeriques",
-    "titre": "Visualiseur de Suites Numériques",
-    "description": "Représentation graphique en escalier et en escargot des suites arithmétiques, géométriques et récurrentes.",
-    "niveaux": [
-      "1re Spé",
-      "1re ST2S",
-      "Terminale ES"
-    ],
-    "theme": "Analyse & Fonctions",
-    "url": "https://ton-site.netlify.app/suites",
-    "icone": "bar-chart-3",
-    "couleur": "violet",
-    "motsCles": [
-      "récurrence",
-      "limite",
-      "arithmétique",
-      "géométrique",
-      "terme"
-    ]
-  }
 ]
