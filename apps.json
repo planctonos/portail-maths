@@ -4,6 +4,7 @@
     "theme": "Trigonométrie",
     "description": "Entraînement interactif sur le cercle trigonométrique, le placement des angles remarquables en radians, cosinus/sinus et la résolution d'équations.",
     "url": "https://lhmonettrigomaster.netlify.app/",
+    "type": "React / Vite",
     "icone": "compass",
     "niveaux": [
       "2nde",
@@ -55,6 +56,7 @@
     "theme": "Fonctions",
     "description": "Apprendre les éléments importants de toutes les fonctions de référence en classe de seconde à l'aide d'un \"jacques à dit\"",
     "url": "https://planctonos.github.io/portail-maths/apps-html/Fonctions_references.html",
+    "type": "HTML pur",
     "icone": "function-square",
     "niveaux": [
       "2nde"
