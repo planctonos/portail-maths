@@ -91,10 +91,10 @@
       <p>Portail pédagogique — Hébergement hybride GitHub &amp; Netlify</p>
       <button
         onclick="openEditorModal()"
-        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-sm transition"
       >
-        <i data-lucide="file-json" class="w-4 h-4 text-blue-600"></i>
-        Gérer le catalogue (générer apps.json)
+        <i data-lucide="sliders-horizontal" class="w-4 h-4 text-sky-400"></i>
+        Gérer le catalogue (Éditeur apps.json)
       </button>
     </div>
   </footer>
@@ -115,51 +115,155 @@
     </div>
   </div>
 
-  <!-- Modale Éditeur JSON -->
-  <div id="editor-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+  <!-- Modale Éditeur JSON Complet -->
+  <div id="editor-modal" class="fixed inset-0 bg-slate-900/65 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- En-tête de la modale -->
+      <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3 bg-slate-50">
         <div>
-          <h3 class="text-lg font-bold text-slate-800">Éditeur du fichier <code class="text-blue-600">apps.json</code></h3>
-          <p class="text-xs text-slate-500">Ajoutez vos liens Netlify ou vos chemins GitHub (<code class="text-slate-700">./apps-html/fichier.html</code>)</p>
+          <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+            Gestionnaire du catalogue <code class="text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-sm">apps.json</code>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Ajoutez, modifiez ou réordonnez vos applications avant d'exporter vers GitHub.</p>
         </div>
-        <button onclick="closeEditorModal()" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- Onglets Visuel / Code JSON -->
+          <div class="bg-slate-200/80 p-1 rounded-lg flex text-xs font-semibold">
+            <button id="tab-visual-btn" onclick="switchEditorTab('visual')" class="px-3 py-1.5 rounded-md bg-white text-slate-800 shadow-sm transition">
+              Éditeur visuel
+            </button>
+            <button id="tab-raw-btn" onclick="switchEditorTab('raw')" class="px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition">
+              Code JSON brut
+            </button>
+          </div>
+          <button onclick="closeEditorModal()" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200/60">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
       </div>
 
-      <div class="p-6 overflow-y-auto space-y-6 flex-grow">
-        <!-- Formulaire d'ajout -->
-        <form id="add-app-form" class="bg-blue-50/60 border border-blue-100 rounded-xl p-4 space-y-3">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-blue-800">Ajouter une nouvelle application</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input type="text" id="new-title" required placeholder="Titre (ex: Trigo Master)" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm" />
-            <input type="text" id="new-theme" required placeholder="Thème (ex: Trigonométrie)" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm" />
+      <!-- Vue 1 : Éditeur visuel complet -->
+      <div id="editor-view-visual" class="p-6 overflow-y-auto space-y-6 flex-grow">
+        
+        <!-- Formulaire Ajout / Édition -->
+        <form id="app-form" class="bg-gradient-to-br from-blue-50/80 to-indigo-50/50 border border-blue-200/70 rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h4 id="form-heading" class="text-xs font-bold uppercase tracking-wider text-blue-800 flex items-center gap-1.5">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Ajouter une nouvelle application
+            </h4>
+            <button type="button" id="cancel-edit-btn" onclick="resetForm()" class="hidden text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+              Annuler la modification
+            </button>
           </div>
-          <input type="text" id="new-desc" required placeholder="Courte description pédagogique..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm" />
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input type="text" id="new-url" required placeholder="URL (https://...netlify.app ou ./apps-html/app.html)" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-mono" />
-            <input type="text" id="new-levels" required placeholder="Niveaux séparés par virgule (ex: 2nde, 1re Spé)" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm" />
+
+          <input type="hidden" id="edit-index" value="-1" />
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Titre de l'application *</label>
+              <input type="text" id="field-title" required placeholder="Ex: Trigo Master" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Thème / Chapitre *</label>
+              <input type="text" id="field-theme" required placeholder="Ex: Trigonométrie" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            </div>
           </div>
-          <div class="flex justify-end">
-            <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
-              <i data-lucide="plus" class="w-4 h-4"></i> Ajouter à la liste
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Description pédagogique *</label>
+            <textarea id="field-desc" rows="2" required placeholder="Objectif pédagogique pour l'élève..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">URL (Netlify ou chemin relatif GitHub) *</label>
+              <input type="text" id="field-url" required placeholder="https://mon-app.netlify.app ou ./apps-html/outil.html" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Icône de la carte</label>
+              <select id="field-icon" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="compass">Compas / Géométrie</option>
+                <option value="calculator">Calculatrice / Algèbre</option>
+                <option value="bar-chart-3">Graphique / Statistiques</option>
+                <option value="dice-5">Dés / Probabilités</option>
+                <option value="function-square">Fonction / Analyse</option>
+                <option value="users">Classe / Gestion</option>
+                <option value="sparkles">Outil / Automatismes</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sélection rapide des niveaux -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5">Niveaux concernés</label>
+            <div class="flex flex-wrap gap-2" id="level-checkboxes">
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" value="2nde" class="rounded text-blue-600 focus:ring-blue-500" /> 2nde
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" value="1re Spé" class="rounded text-blue-600 focus:ring-blue-500" /> 1re Spé
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" value="1re ST2S" class="rounded text-blue-600 focus:ring-blue-500" /> 1re ST2S
+              </label>
+              <label class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-medium cursor-pointer hover:bg-slate-50">
+                <input type="checkbox" value="Terminale" class="rounded text-blue-600 focus:ring-blue-500" /> Terminale
+              </label>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button type="submit" id="submit-app-btn" class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition">
+              <i data-lucide="plus" class="w-4 h-4"></i> Ajouter au catalogue
             </button>
           </div>
         </form>
 
-        <!-- Liste actuelle -->
+        <!-- Liste ordonnable et éditable -->
         <div>
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Applications dans le catalogue (<span id="editor-count">0</span>)</h4>
-          <div id="editor-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Applications enregistrées (<span id="editor-count">0</span>)
+            </h4>
+            <span class="text-[11px] text-slate-400">Utilisez les flèches pour modifier l'ordre d'affichage</span>
+          </div>
+          <div id="editor-list" class="space-y-2.5"></div>
         </div>
       </div>
 
+      <!-- Vue 2 : Éditeur JSON brut & Import -->
+      <div id="editor-view-raw" class="hidden p-6 overflow-y-auto space-y-4 flex-grow flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <p class="text-xs text-slate-600">Vous pouvez modifier directement le JSON ci-dessous ou coller le contenu de votre fichier GitHub.</p>
+          <div class="flex gap-2">
+            <button onclick="copyRawJson()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copier le JSON
+            </button>
+            <button onclick="applyRawJson()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Appliquer les modifications
+            </button>
+          </div>
+        </div>
+        <textarea id="raw-json-textarea" class="w-full flex-grow min-h-[320px] p-4 font-mono text-xs bg-slate-900 text-emerald-300 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        <p id="raw-json-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 p-2.5 rounded-lg border border-rose-200"></p>
+      </div>
+
+      <!-- Barre d'actions finale -->
       <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <p class="text-xs text-slate-500">Téléversez ensuite ce fichier à la racine de votre dépôt GitHub.</p>
-        <button onclick="downloadJson()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
-          <i data-lucide="download" class="w-4 h-4"></i> Télécharger apps.json
-        </button>
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <i data-lucide="info" class="w-4 h-4 text-blue-500 shrink-0"></i>
+          <span>Téléchargez <code class="font-bold text-slate-700">apps.json</code> puis déposez-le à la racine de votre dépôt GitHub.</span>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="copyRawJson()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-xl transition">
+            <i data-lucide="clipboard-copy" class="w-4 h-4"></i> Copier
+          </button>
+          <button onclick="downloadJson()" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition">
+            <i data-lucide="download" class="w-4 h-4"></i> Télécharger apps.json
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -167,20 +271,17 @@
   <script>
     // =========================================================================
     // CONFIGURATION GITHUB JSON
-    // 1. Par défaut, le portail cherche './apps.json' dans le même dépôt.
-    // 2. Si ton fichier apps.json est sur un AUTRE dépôt GitHub, colle son URL
-    //    "Raw" ci-dessous (ex: 'https://raw.githubusercontent.com/pseudo/depot/main/apps.json')
+    // Laisse vide '' pour charger ./apps.json situé à côté de index.html.
     // =========================================================================
     const GITHUB_RAW_JSON_URL = '';
 
-    // Applications affichées par défaut tant que apps.json n'est pas créé sur GitHub
     const FALLBACK_APPS = [
       {
         titre: "Trigo Master",
         description: "Maîtriser le cercle trigonométrique, les angles remarquables et les équations trigonométriques.",
         niveaux: ["1re Spé", "Terminale"],
         theme: "Trigonométrie",
-        url: "https://lhmonettrigomaster.netlify.app/",
+        url: "https://trigo-master.netlify.app",
         icone: "compass"
       },
       {
@@ -205,30 +306,32 @@
     let currentLevel = 'Tous';
     let currentSearch = '';
 
-    // Chargement intelligent du JSON depuis GitHub
+    // Chargement du JSON depuis GitHub avec contournement du cache
     async function loadAppsCatalog() {
       const syncDot = document.getElementById('sync-dot');
       const syncText = document.getElementById('sync-text');
 
-      // On ajoute un paramètre anti-cache (?t=...) pour voir les modifs GitHub rapidement
-      const cacheBuster = `?t=${Math.floor(Date.now() / 60000)}`;
-      const targetUrl = GITHUB_RAW_JSON_URL
-        ? `${GITHUB_RAW_JSON_URL}${cacheBuster}`
-        : `./apps.json${cacheBuster}`;
+      const cacheBuster = `?t=${Date.now()}`;
+      const baseUrl = GITHUB_RAW_JSON_URL.trim() || './apps.json';
+      const targetUrl = `${baseUrl}${cacheBuster}`;
 
       try {
-        const response = await fetch(targetUrl);
-        if (!response.ok) throw new Error('Fichier apps.json non trouvé');
+        const response = await fetch(targetUrl, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status} (apps.json non trouvé)`);
+        }
         const data = await response.json();
-        if (!Array.isArray(data)) throw new Error('Format JSON invalide');
+        if (!Array.isArray(data)) {
+          throw new Error('Format JSON invalide');
+        }
 
         allApps = data;
         syncDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        syncText.textContent = `Catalogue GitHub synchronisé (${allApps.length} outils)`;
+        syncText.textContent = `Catalogue synchronisé (${allApps.length} outils)`;
       } catch (error) {
         allApps = [...FALLBACK_APPS];
         syncDot.className = 'w-2 h-2 rounded-full bg-amber-300';
-        syncText.textContent = 'Mode démonstration (apps.json non détecté)';
+        syncText.textContent = `Mode démo (${error.message})`;
       }
 
       renderApps();
@@ -269,12 +372,19 @@
           `<span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">${lvl}</span>`
         ).join('');
 
+        const iconName = app.icone || 'sparkles';
+
         const card = document.createElement('article');
         card.className = 'card-hover bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md p-5 flex flex-col justify-between';
         card.innerHTML = `
           <div>
             <div class="flex items-start justify-between gap-2 mb-3">
-              <span class="text-xs font-bold uppercase tracking-wider text-blue-600">${app.theme || 'Mathématiques'}</span>
+              <div class="flex items-center gap-2">
+                <span class="p-2 rounded-xl bg-blue-50 text-blue-600">
+                  <i data-lucide="${iconName}" class="w-4 h-4"></i>
+                </span>
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">${app.theme || 'Mathématiques'}</span>
+              </div>
               ${hostBadge}
             </div>
             <h2 class="text-lg font-bold text-slate-800 mb-2">${app.titre}</h2>
@@ -305,7 +415,7 @@
       lucide.createIcons();
     }
 
-    // Gestion des filtres de niveau
+    // Filtres par niveau
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => {
@@ -319,13 +429,13 @@
       });
     });
 
-    // Gestion de la barre de recherche
+    // Recherche instantanée
     document.getElementById('search-input').addEventListener('input', (e) => {
       currentSearch = e.target.value;
       renderApps();
     });
 
-    // Modale QR Code (convertit automatiquement les liens relatifs ./apps-html/... en URL absolue)
+    // Modale QR Code
     function openQrModal(title, url) {
       const absoluteUrl = new URL(url, window.location.href).href;
       document.getElementById('qr-title').textContent = title;
@@ -353,9 +463,13 @@
       modal.classList.remove('flex');
     }
 
-    // Modale Éditeur JSON
+    // =========================================================================
+    // ÉDITEUR COMPLET DU CATALOGUE JSON
+    // =========================================================================
     function openEditorModal() {
+      resetForm();
       renderEditorList();
+      switchEditorTab('visual');
       const modal = document.getElementById('editor-modal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -367,53 +481,173 @@
       modal.classList.remove('flex');
     }
 
+    function switchEditorTab(tab) {
+      const visualView = document.getElementById('editor-view-visual');
+      const rawView = document.getElementById('editor-view-raw');
+      const visualBtn = document.getElementById('tab-visual-btn');
+      const rawBtn = document.getElementById('tab-raw-btn');
+
+      if (tab === 'visual') {
+        visualView.classList.remove('hidden');
+        rawView.classList.add('hidden');
+        visualBtn.className = 'px-3 py-1.5 rounded-md bg-white text-slate-800 shadow-sm transition';
+        rawBtn.className = 'px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition';
+        renderEditorList();
+      } else {
+        document.getElementById('raw-json-textarea').value = JSON.stringify(allApps, null, 2);
+        document.getElementById('raw-json-error').classList.add('hidden');
+        visualView.classList.add('hidden');
+        rawView.classList.remove('hidden');
+        rawBtn.className = 'px-3 py-1.5 rounded-md bg-white text-slate-800 shadow-sm transition';
+        visualBtn.className = 'px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 transition';
+      }
+    }
+
     function renderEditorList() {
       const list = document.getElementById('editor-list');
       document.getElementById('editor-count').textContent = allApps.length;
       list.innerHTML = '';
 
       allApps.forEach((app, index) => {
+        const levelsBadges = (app.niveaux || []).map(l =>
+          `<span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-200/80 text-slate-700">${l}</span>`
+        ).join('');
+
         const item = document.createElement('div');
-        item.className = 'flex items-center justify-between gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm';
+        item.className = 'flex items-center justify-between gap-3 p-3.5 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl transition';
         item.innerHTML = `
-          <div class="min-w-0">
-            <p class="font-semibold text-slate-800 truncate">${app.titre}</p>
-            <p class="text-xs text-slate-500 font-mono truncate">${app.url}</p>
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="p-2 rounded-lg bg-white border border-slate-200 text-blue-600 shrink-0">
+              <i data-lucide="${app.icone || 'sparkles'}" class="w-4 h-4"></i>
+            </span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-bold text-sm text-slate-800 truncate">${app.titre}</p>
+                <span class="text-[11px] font-semibold text-blue-600">• ${app.theme}</span>
+              </div>
+              <p class="text-xs text-slate-500 font-mono truncate mt-0.5">${app.url}</p>
+              <div class="flex flex-wrap gap-1 mt-1.5">${levelsBadges}</div>
+            </div>
           </div>
-          <button onclick="removeApp(${index})" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition" title="Supprimer">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
+
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="moveApp(${index}, -1)" ${index === 0 ? 'disabled' : ''} class="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-800 disabled:opacity-30 transition" title="Monter">
+              <i data-lucide="arrow-up" class="w-4 h-4"></i>
+            </button>
+            <button onclick="moveApp(${index}, 1)" ${index === allApps.length - 1 ? 'disabled' : ''} class="p-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-slate-800 disabled:opacity-30 transition" title="Descendre">
+              <i data-lucide="arrow-down" class="w-4 h-4"></i>
+            </button>
+            <button onclick="editApp(${index})" class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition" title="Modifier">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
+            <button onclick="removeApp(${index})" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition" title="Supprimer">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
         `;
         list.appendChild(item);
       });
       lucide.createIcons();
     }
 
-    document.getElementById('add-app-form').addEventListener('submit', (e) => {
+    // Soumission formulaire (Ajout ou Mise à jour)
+    document.getElementById('app-form').addEventListener('submit', (e) => {
       e.preventDefault();
-      const niveauxArray = document.getElementById('new-levels').value
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
+      const editIndex = parseInt(document.getElementById('edit-index').value, 10);
 
-      allApps.push({
-        titre: document.getElementById('new-title').value.trim(),
-        theme: document.getElementById('new-theme').value.trim(),
-        description: document.getElementById('new-desc').value.trim(),
-        url: document.getElementById('new-url').value.trim(),
-        niveaux: niveauxArray,
-        icone: "sparkles"
-      });
+      const selectedLevels = Array.from(document.querySelectorAll('#level-checkboxes input:checked'))
+        .map(cb => cb.value);
 
-      e.target.reset();
+      const appData = {
+        titre: document.getElementById('field-title').value.trim(),
+        theme: document.getElementById('field-theme').value.trim(),
+        description: document.getElementById('field-desc').value.trim(),
+        url: document.getElementById('field-url').value.trim(),
+        icone: document.getElementById('field-icon').value,
+        niveaux: selectedLevels.length > 0 ? selectedLevels : ["2nde", "1re Spé", "Terminale"]
+      };
+
+      if (editIndex >= 0) {
+        allApps[editIndex] = appData;
+      } else {
+        allApps.push(appData);
+      }
+
+      resetForm();
       renderEditorList();
       renderApps();
     });
 
-    function removeApp(index) {
-      allApps.splice(index, 1);
+    function editApp(index) {
+      const app = allApps[index];
+      document.getElementById('edit-index').value = index;
+      document.getElementById('field-title').value = app.titre || '';
+      document.getElementById('field-theme').value = app.theme || '';
+      document.getElementById('field-desc').value = app.description || '';
+      document.getElementById('field-url').value = app.url || '';
+      document.getElementById('field-icon').value = app.icone || 'sparkles';
+
+      document.querySelectorAll('#level-checkboxes input').forEach(cb => {
+        cb.checked = (app.niveaux || []).includes(cb.value);
+      });
+
+      document.getElementById('form-heading').innerHTML = `<i data-lucide="pencil" class="w-4 h-4"></i> Modifier : ${app.titre}`;
+      document.getElementById('submit-app-btn').innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Enregistrer les modifications`;
+      document.getElementById('cancel-edit-btn').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function resetForm() {
+      document.getElementById('app-form').reset();
+      document.getElementById('edit-index').value = '-1';
+      document.getElementById('form-heading').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4"></i> Ajouter une nouvelle application`;
+      document.getElementById('submit-app-btn').innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Ajouter au catalogue`;
+      document.getElementById('cancel-edit-btn').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    function moveApp(index, direction) {
+      const targetIndex = index + direction;
+      if (targetIndex < 0 || targetIndex >= allApps.length) return;
+      const temp = allApps[index];
+      allApps[index] = allApps[targetIndex];
+      allApps[targetIndex] = temp;
       renderEditorList();
       renderApps();
+    }
+
+    function removeApp(index) {
+      allApps.splice(index, 1);
+      if (parseInt(document.getElementById('edit-index').value, 10) === index) {
+        resetForm();
+      }
+      renderEditorList();
+      renderApps();
+    }
+
+    function applyRawJson() {
+      const rawText = document.getElementById('raw-json-textarea').value;
+      const errorBox = document.getElementById('raw-json-error');
+      try {
+        const parsed = JSON.parse(rawText);
+        if (!Array.isArray(parsed)) {
+          throw new Error("Le JSON doit être un tableau commençant par [ et se terminant par ].");
+        }
+        allApps = parsed;
+        errorBox.classList.add('hidden');
+        renderApps();
+        switchEditorTab('visual');
+      } catch (err) {
+        errorBox.textContent = `Erreur de syntaxe JSON : ${err.message}`;
+        errorBox.classList.remove('hidden');
+      }
+    }
+
+    function copyRawJson() {
+      const jsonStr = JSON.stringify(allApps, null, 2);
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        alert("Le code JSON a été copié dans le presse-papiers ! Tu peux le coller directement dans apps.json sur GitHub.");
+      });
     }
 
     function downloadJson() {
@@ -427,7 +661,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // Initialisation au démarrage
+    // Initialisation
     lucide.createIcons();
     loadAppsCatalog();
   </script>
