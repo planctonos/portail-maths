@@ -1,23 +1,13 @@
 [
   {
-    "id": "trigo-master",
     "titre": "Trigo Master",
-    "description": "Entraînement interactif sur le cercle trigonométrique, le placement des angles remarquables en radians, cosinus/sinus et la résolution d'équations.",
-    "niveaux": [
-      "1re Spé",
-      "Terminale"
-    ],
     "theme": "Trigonométrie",
+    "description": "Entraînement interactif sur le cercle trigonométrique, le placement des angles remarquables en radians, cosinus/sinus et la résolution d'équations.",
     "url": "https://lhmonettrigomaster.netlify.app/",
     "icone": "compass",
-    "couleur": "indigo",
-    "motsCles": [
-      "cercle",
-      "radian",
-      "sinus",
-      "cosinus",
-      "angle",
-      "pi"
+    "niveaux": [
+      "2nde",
+      "1re Spé"
     ]
   },
   {
@@ -58,6 +48,16 @@
       "coefficient directeur",
       "extremum",
       "variation"
+    ]
+  },
+  {
+    "titre": "Fonctions de référence",
+    "theme": "Fonctions",
+    "description": "Apprendre les éléments importants de toutes les fonctions de référence en classe de seconde à l'aide d'un \"jacques à dit\"",
+    "url": "https://planctonos.github.io/portail-maths/apps-html/Fonctions_references.html",
+    "icone": "function-square",
+    "niveaux": [
+      "2nde"
     ]
   }
 ]
