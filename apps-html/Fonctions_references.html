@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jacques a dit - Fonctions de Référence</title>
+    <style>
+        :root {
+            --primary: #3498db; --success: #27ae60; --error: #e74c3c;
+            --bg: #f0f3f5; --curve-color: #2980b9; --axis-color: #7f8c8d; --grid-color: #e0e0e0;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-card { background: white; width: 95%; max-width: 600px; height: 95vh; padding: 15px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; }
+        h1 { font-size: 1.2rem; color: #2c3e50; margin: 0 0 5px 0; }
+        .hidden { display: none !important; }
+        
+        .setup-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        input#player-name { padding: 10px; font-size: 1rem; border: 2px solid #ddd; border-radius: 20px; width: 80%; }
+        .timer-settings { width: 80%; background: #f9f9f9; padding: 10px; border-radius: 15px; border: 1px solid #eee; }
+        #timer-slider { width: 100%; cursor: pointer; }
+        .score-info { font-size: 0.75rem; color: var(--primary); font-weight: bold; margin-top: 5px; }
+        
+        button { padding: 10px 20px; font-size: 1rem; cursor: pointer; border: none; border-radius: 20px; background: var(--primary); color: white; font-weight: bold; }
+        #game-header { display: flex; justify-content: space-between; font-size: 0.8rem; color: #7f8c8d; }
+        #instruction-zone { min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        #instruction { font-size: 1.05rem; font-weight: bold; color: #2c3e50; background: #edf2f7; padding: 8px; border-radius: 8px; width: 100%; }
+        #timer-bar { width: 100%; height: 6px; background: #eee; border-radius: 3px; margin: 10px 0; overflow: hidden; position: relative; }
+        #timer-fill { height: 100%; background: var(--error); width: 0%; position: absolute; left: 0; top: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-grow: 1; }
+        .btn-f { border: 2px solid #eee; border-radius: 10px; cursor: pointer; padding: 5px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn-f:hover { border-color: var(--primary); }
+        .svg-container { width: 100%; height: 110px; display: flex; align-items: center; justify-content: center; }
+        .btn-f svg { max-width: 100%; max-height: 100%; }
+        .func-name { font-weight: bold; font-size: 0.8rem; color: #555; margin-top: 2px; }
+        #feedback-area { background: #fff; padding: 10px; border-radius: 10px; border: 1px solid #eee; font-size: 0.85rem; }
+        .explanation { background: #fff4f4; color: #c0392b; padding: 8px; border-radius: 5px; margin: 5px 0; border-left: 3px solid var(--error); text-align: left; }
+    </style>
+</head>
+<body>
+
+<div id="game-card">
+    <div id="setup-screen" class="setup-container">
+        <h1>Maths : Jacques a dit sur les fonctions de références!</h1>
+        <input type="text" id="player-name" placeholder="Ton prénom..." maxlength="12">
+        
+        <div class="timer-settings">
+            <label for="timer-slider" style="font-size: 0.9rem; color: #555;">Difficulté : <b id="seconds-val">7</b>s</label>
+            <input type="range" id="timer-slider" min="5" max="10" step="1" value="7" oninput="updateScorePotential(this.value)">
+            <div id="potential-info" class="score-info">Chaque réponse : 142 pts</div>
+        </div>
+
+        <button onclick="startGame()">C'est parti !</button>
+        <div id="record-display" style="font-size:0.8rem; color:#7f8c8d;"></div>
+    </div>
+
+    <div id="game-ui" class="hidden" style="display:flex; flex-direction:column; height:100%;">
+        <div id="game-header">
+            <div id="progress">Q 1/10</div>
+            <div id="current-score">Points: 0</div>
+        </div>
+        <div id="instruction-zone"><div id="instruction"></div></div>
+        <div id="timer-bar"><div id="timer-fill"></div></div>
+        <div class="grid" id="button-grid"></div>
+        <div id="feedback-area" class="hidden">
+            <div id="feedback-msg"></div>
+            <div id="explanation-text" class="explanation hidden"></div>
+            <button id="next-btn" onclick="askQuestion()" style="font-size:0.8rem; padding: 5px 15px; margin-top:5px;">Continuer ➔</button>
+        </div>
+    </div>
+
+    <div id="final-screen" class="hidden">
+        <h1>Fini !</h1>
+        <div id="final-msg" style="font-size:1.1rem; margin: 20px 0;"></div>
+        <button onclick="location.reload()">Rejouer</button>
+    </div>
+</div>
+
+<script>
+const QUESTIONS_PER_SESSION = 10;
+let userTimeLimit = 7000;
+let pointsPerCorrect = 142;
+let totalPoints = 0, currentIdx = 0, playerName = "", sessionQuestions = [], gameActive = false, timerId;
+
+const database = [
+    { text: "Mon ensemble de définition est l'ensemble des réels tout entier.", targets: ["carre", "cube"], exp: "x² et x³ sont calculables pour n'importe quel nombre." },
+    { text: "Mon ensemble de définition est [0 ; +∞[.", targets: ["racine"], exp: "La racine d'un nombre négatif n'existe pas." },
+    { text: "Mon ensemble de définition exclut la valeur 0.", targets: ["inverse"], exp: "La division par zéro est impossible." },
+    { text: "Le nombre 0 est ma seule valeur interdite.", targets: ["inverse"], exp: "On ne peut calculer 1/x pour tout x, sauf 0." },
+    { text: "Je n'accepte pas les nombres strictement négatifs comme antécédents.", targets: ["racine"], exp: "La fonction racine carrée n'est définie que pour les positifs." },
+    { text: "Je peux prendre n'importe quel nombre réel en antécédent, sans exception.", targets: ["carre", "cube"], exp: "Aucune valeur n'est interdite pour le carré et le cube." },
+    { text: "Ma fonction est strictement croissante sur R.", targets: ["cube"], exp: "La fonction cube monte constamment sur tout l'axe." },
+    { text: "Ma fonction est strictement décroissante sur ]-∞ ; 0[.", targets: ["carre", "inverse"], exp: "La parabole descend avant 0, l'hyperbole descend toujours." },
+    { text: "Ma fonction est strictement croissante sur [0 ; +∞[.", targets: ["carre", "cube", "racine"], exp: "Toutes montent du côté positif, sauf l'inverse." },
+    { text: "Ma fonction est strictement décroissante sur ]0 ; +∞[.", targets: ["inverse"], exp: "La fonction inverse descend en s'approchant de l'axe horizontal." },
+    { text: "Ma fonction change de sens de variation en x = 0.", targets: ["carre"], exp: "La parabole passe de décroissante à croissante." },
+    { text: "Mon sens de variation reste le même sur tout mon ensemble de définition.", targets: ["cube", "racine", "inverse"], exp: "Seul le carré change de sens (descend puis monte)." },
+    { text: "Je suis une fonction monotone sur l'ensemble des réels.", targets: ["cube"], exp: "Le cube est la seule fonction qui est croissante partout sans interruption." },
+    { text: "Ma fonction n'est ni strictement croissante, ni strictement décroissante sur R.", targets: ["carre"], exp: "Elle change de sens de variation au niveau de 0." },
+    { text: "Je suis une fonction toujours positive ou nulle.", targets: ["carre", "racine"], exp: "Un carré et une racine carrée ne sont jamais négatifs." },
+    { text: "Je peux prendre des valeurs strictement négatives.", targets: ["inverse", "cube"], exp: "1/x et x³ donnent un résultat négatif si x est négatif." },
+    { text: "Je ne suis jamais égale à 0.", targets: ["inverse"], exp: "Il est impossible que 1 divisé par x donne 0." },
+    { text: "Ma fonction s'annule exactement en x = 0.", targets: ["carre", "cube", "racine"], exp: "Le carré, le cube et la racine de 0 valent 0." },
+    { text: "Le signe de ma fonction est toujours identique à celui de x.", targets: ["cube", "inverse"], exp: "Négatif avant 0, positif après." },
+    { text: "Je suis strictement positive sur ]0 ; +∞[.", targets: ["carre", "cube", "racine", "inverse"], exp: "Elles donnent toutes des résultats positifs pour x>0." },
+    { text: "Je suis strictement négative sur ]-∞ ; 0[.", targets: ["cube", "inverse"], exp: "x³ et 1/x retournent des résultats inférieurs à 0." },
+    { text: "Je suis une fonction paire.", targets: ["carre"], exp: "f(-x) = f(x)." },
+    { text: "Je suis une fonction impaire.", targets: ["inverse", "cube"], exp: "f(-x) = -f(x)." },
+    { text: "Ma courbe admet l'axe des ordonnées comme axe de symétrie.", targets: ["carre"], exp: "L'effet miroir parfait des fonctions paires." },
+    { text: "Ma courbe admet l'origine du repère comme centre de symétrie.", targets: ["inverse", "cube"], exp: "La symétrie centrale caractérise les fonctions impaires." },
+    { text: "Je ne suis ni paire, ni impaire.", targets: ["racine"], exp: "Elle n'est même pas définie pour les nombres négatifs !" },
+    { text: "Ma courbe s'appelle une parabole.", targets: ["carre"], exp: "C'est la célèbre courbe en 'U'." },
+    { text: "Ma courbe s'appelle une hyperbole.", targets: ["inverse"], exp: "C'est la courbe qui a deux branches disjointes." },
+    { text: "Ma courbe est constituée de deux branches séparées.", targets: ["inverse"], exp: "Il y a une rupture en zéro." },
+    { text: "Ma courbe passe exactement par l'origine du repère (0 ; 0).", targets: ["carre", "cube", "racine"], exp: "f(0) vaut 0 dans ces 3 cas." },
+    { text: "Ma courbe ne passe pas par l'origine du repère.", targets: ["inverse"], exp: "La valeur x=0 n'est pas acceptée, donc on l'évite." },
+    { text: "Ma courbe se situe uniquement dans le quart supérieur droit du graphique.", targets: ["racine"], exp: "Définie dans les positifs, et donne un résultat positif." },
+    { text: "Ma courbe possède une allure globale en forme de 'S' allongé.", targets: ["cube"], exp: "Elle monte depuis le fond gauche, fait un palier en zéro et s'envole en haut à droite." },
+    { text: "Ma courbe s'approche des deux axes du repère sans jamais les toucher.", targets: ["inverse"], exp: "Les axes sont des asymptotes à l'hyperbole." },
+    { text: "Ma courbe admet un minimum en son point d'origine.", targets: ["carre"], exp: "Seule la fonction carrée est décroissante puis croissante en zéro." },
+    { text: "Ma courbe démarre à l'origine et s'incurve doucement vers la droite.", targets: ["racine"], exp: "La forme en demi-parabole inversée." },
+    { text: "Si un nombre est entre 0 et 1, mon résultat sera plus petit que ce nombre.", targets: ["carre", "cube"], exp: "Les puissances réduisent les nombres inférieurs à 1." },
+    { text: "Si x est supérieur à 1, mon résultat sera plus grand que x.", targets: ["carre", "cube"], exp: "Les carrés et les cubes agrandissent les nombres strictement supérieurs à 1." },
+    { text: "Si x est supérieur à 1, mon résultat sera plus petit que x.", targets: ["racine", "inverse"], exp: "La racine réduit, l'inverse encore plus." },
+    { text: "Je conserve toujours l'ordre des nombres pris comme antécédents sur les positifs.", targets: ["carre", "cube", "racine"], exp: "C'est une propriété des fonctions croissantes." }
+];
+
+const svgDefs = {
+    carre: `<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M -5 -2 H 5 M -5 2 H 5 M -2 -5 V 5 M 2 -5 V 5" stroke="#e0e0e0" stroke-width="0.2"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#7f8c8d" stroke-width="0.3"/><line x1="0" y1="-5" x2="0" y2="5" stroke="#7f8c8d" stroke-width="0.3"/><path d="M -2.23 -5 Q 0 5 2.23 -5" fill="none" stroke="#2980b9" stroke-width="0.6" stroke-linecap="round"/></svg>`,
+    inverse: `<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M -5 -2 H 5 M -5 2 H 5 M -2 -5 V 5 M 2 -5 V 5" stroke="#e0e0e0" stroke-width="0.2"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#7f8c8d" stroke-width="0.3"/><line x1="0" y1="-5" x2="0" y2="5" stroke="#7f8c8d" stroke-width="0.3"/><path d="M -5 0.3 Q -0.7 0.7 -0.3 5 M 0.3 -5 Q 0.7 -0.7 5 -0.3" fill="none" stroke="#2980b9" stroke-width="0.6" stroke-linecap="round"/></svg>`,
+    cube: `<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M -5 -2 H 5 M -5 2 H 5 M -2 -5 V 5 M 2 -5 V 5" stroke="#e0e0e0" stroke-width="0.2"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#7f8c8d" stroke-width="0.3"/><line x1="0" y1="-5" x2="0" y2="5" stroke="#7f8c8d" stroke-width="0.3"/><path d="M -1.8 5 C -1 0, -0.5 0, 0 0 C 0.5 0, 1 0, 1.8 -5" fill="none" stroke="#2980b9" stroke-width="0.6" stroke-linecap="round"/></svg>`,
+    racine: `<svg viewBox="-5 -5 10 10" xmlns="http://www.w3.org/2000/svg"><path d="M -5 -2 H 5 M -5 2 H 5 M -2 -5 V 5 M 2 -5 V 5" stroke="#e0e0e0" stroke-width="0.2"/><line x1="-5" y1="0" x2="5" y2="0" stroke="#7f8c8d" stroke-width="0.3"/><line x1="0" y1="-5" x2="0" y2="5" stroke="#7f8c8d" stroke-width="0.3"/><path d="M 0 0 Q 0 -1.2 5 -2.24" fill="none" stroke="#2980b9" stroke-width="0.6" stroke-linecap="round"/></svg>`
+};
+
+function updateScorePotential(val) {
+    document.getElementById('seconds-val').innerText = val;
+    // Formule : Plus c'est court, plus on gagne (1000 pts / temps) * factor
+    pointsPerCorrect = Math.round(1000 / parseInt(val));
+    document.getElementById('potential-info').innerText = `Chaque réponse : ${pointsPerCorrect} pts`;
+}
+
+function startGame() {
+    playerName = document.getElementById('player-name').value.trim() || "Anonyme";
+    const val = parseInt(document.getElementById('timer-slider').value);
+    userTimeLimit = val * 1000;
+    pointsPerCorrect = Math.round(1000 / val);
+    
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-ui').classList.remove('hidden');
+    totalPoints = 0; currentIdx = 0;
+    sessionQuestions = [...database].sort(() => 0.5 - Math.random()).slice(0, QUESTIONS_PER_SESSION);
+    askQuestion();
+}
+
+function askQuestion() {
+    if(currentIdx >= QUESTIONS_PER_SESSION) return endGame();
+    gameActive = true;
+    document.getElementById('feedback-area').classList.add('hidden');
+    document.getElementById('explanation-text').classList.add('hidden');
+    document.getElementById('button-grid').style.opacity = "1";
+    document.getElementById('progress').innerText = `Q ${currentIdx + 1}/10`;
+    document.getElementById('current-score').innerText = `Points: ${totalPoints}`;
+    
+    const q = sessionQuestions[currentIdx];
+    const hasJacques = Math.random() < 0.8; 
+    document.getElementById('instruction').innerText = hasJacques ? "Jacques a dit : " + q.text : q.text;
+    
+    renderButtons(q, hasJacques);
+    startTimer(hasJacques, q);
+}
+
+function renderButtons(q, hasJacques) {
+    const grid = document.getElementById('button-grid'); grid.innerHTML = '';
+    const keys = ['carre', 'inverse', 'cube', 'racine'].sort(() => 0.5 - Math.random());
+    const labels = { carre: 'Carré', inverse: 'Inverse', cube: 'Cube', racine: 'Racine' };
+    keys.forEach(key => {
+        const btn = document.createElement('div'); btn.className = 'btn-f';
+        btn.innerHTML = `<div class="svg-container">${svgDefs[key]}</div><span class="func-name">${labels[key]}</span>`;
+        btn.onclick = () => { if(gameActive) handleResponse(hasJacques && q.targets.includes(key), hasJacques, q); };
+        grid.appendChild(btn);
+    });
+}
+
+function startTimer(hasJacques, q) {
+    const fill = document.getElementById('timer-fill');
+    fill.style.transition = 'none'; fill.style.width = '100%';
+    setTimeout(() => { 
+        fill.style.transition = `width ${userTimeLimit}ms linear`; 
+        fill.style.width = '0%'; 
+    }, 50);
+    timerId = setTimeout(() => { if(gameActive) handleResponse(!hasJacques, hasJacques, q); }, userTimeLimit + 50);
+}
+
+function handleResponse(isCorrect, wasJacques, questionObj) {
+    gameActive = false; clearTimeout(timerId);
+    document.getElementById('button-grid').style.opacity = "0.4";
+    const feedMsg = document.getElementById('feedback-msg'), expBox = document.getElementById('explanation-text');
+    document.getElementById('feedback-area').classList.remove('hidden');
+    
+    if(isCorrect) { 
+        totalPoints += pointsPerCorrect; 
+        feedMsg.innerHTML = `<span style="color:var(--success); font-weight:bold;">Bravo ${playerName} ! (+${pointsPerCorrect} pts)</span>`; 
+    } else { 
+        feedMsg.innerHTML = `<span style="color:var(--error); font-weight:bold;">Oups... (+0 pts)</span>`;
+        if(!wasJacques) expBox.innerText = `Piège ! Jacques n'avait pas parlé.`;
+        else expBox.innerText = `C'était : ${questionObj.targets.join(' ou ')}. ${questionObj.exp}`;
+        expBox.classList.remove('hidden');
+    }
+    currentIdx++;
+}
+
+function endGame() {
+    document.getElementById('game-ui').classList.add('hidden');
+    document.getElementById('final-screen').classList.remove('hidden');
+    const highscore = localStorage.getItem('bestXP') || 0;
+    if(totalPoints > highscore) localStorage.setItem('bestXP', totalPoints);
+    
+    document.getElementById('final-msg').innerHTML = `Score Final : <strong>${totalPoints} XP</strong><br><small>Record actuel : ${Math.max(totalPoints, highscore)} XP</small>`;
+}
+
+window.onload = () => {
+    const best = localStorage.getItem('bestXP');
+    if(best) document.getElementById('record-display').innerText = "Meilleur Score : " + best + " XP";
+};
+</script>
+</body>
+</html>
