@@ -5,10 +5,10 @@
     "description": "Entraînement interactif sur le cercle trigonométrique, le placement des angles remarquables en radians, cosinus/sinus et la résolution d'équations.",
     "niveaux": [
       "1re Spé",
-      "Terminale"
+      "Seconde"
     ],
     "theme": "Trigonométrie",
-    "url": "https://ton-utilisateur.github.io/trigo-master0/",
+    "url": "https://lhmonettrigomaster.netlify.app/",
     "icone": "compass",
     "couleur": "indigo",
     "motsCles": [
@@ -39,7 +39,7 @@
       "population"
     ]
   },
-   {
+  {
     "id": "derivees-tangentes",
     "titre": "Explorateur de Dérivées & Tangentes",
     "description": "Visualisation dynamique du taux d'accroissement, du nombre dérivé comme pente de la tangente et des variations de fonctions.",
@@ -59,5 +59,5 @@
       "extremum",
       "variation"
     ]
-  },
+  }
 ]
