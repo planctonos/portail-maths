@@ -176,10 +176,19 @@
             <textarea id="field-desc" rows="2" required placeholder="Objectif pédagogique pour l'élève..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <div class="sm:col-span-2">
               <label class="block text-xs font-semibold text-slate-700 mb-1">URL (Netlify ou chemin relatif GitHub) *</label>
-              <input type="text" id="field-url" required placeholder="https://mon-app.netlify.app ou ./apps-html/outil.html" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+              <input type="text" id="field-url" required placeholder="https://... ou ./apps-html/outil.html" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Technologie (Badge)</label>
+              <select id="field-type" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="HTML / JS">HTML / JS</option>
+                <option value="HTML pur">HTML pur</option>
+                <option value="React / Vite">React / Vite</option>
+                <option value="Ressource">Ressource / Lien</option>
+              </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Icône de la carte</label>
@@ -227,7 +236,7 @@
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">
               Applications enregistrées (<span id="editor-count">0</span>)
             </h4>
-            <span class="text-[11px] text-slate-400">Utilisez les flèches pour modifier l'ordre d'affichage</span>
+            <span class="text-[11px] text-slate-400">Cliquez sur le crayon pour corriger le type (HTML pur, HTML/JS, React/Vite)</span>
           </div>
           <div id="editor-list" class="space-y-2.5"></div>
         </div>
@@ -281,6 +290,7 @@
         description: "Maîtriser le cercle trigonométrique, les angles remarquables et les équations trigonométriques.",
         niveaux: ["1re Spé", "Terminale"],
         theme: "Trigonométrie",
+        type: "React / Vite",
         url: "https://trigo-master.netlify.app",
         icone: "compass"
       },
@@ -289,6 +299,7 @@
         description: "Estimation d'une population par échantillonnage et intervalles de confiance.",
         niveaux: ["Terminale"],
         theme: "Probabilités & Stats",
+        type: "HTML / JS",
         url: "./apps-html/simulation-cmr.html",
         icone: "bar-chart-3"
       },
@@ -297,6 +308,7 @@
         description: "Plan de classe dynamique, constitution d'îlots et tirage au sort au tableau.",
         niveaux: ["2nde", "1re Spé", "1re ST2S", "Terminale"],
         theme: "Outils classe",
+        type: "HTML / JS",
         url: "./apps-html/gestion-classe.html",
         icone: "users"
       }
@@ -305,6 +317,21 @@
     let allApps = [];
     let currentLevel = 'Tous';
     let currentSearch = '';
+
+    // Styles visuels associés à chaque type d'application
+    function getTechBadge(app) {
+      const appType = app.type || (app.url && app.url.startsWith('http') ? 'React / Vite' : 'HTML / JS');
+
+      const styles = {
+        'React / Vite': 'text-teal-700 bg-teal-50 border-teal-200/70',
+        'HTML / JS':    'text-indigo-700 bg-indigo-50 border-indigo-200/70',
+        'HTML pur':     'text-amber-700 bg-amber-50 border-amber-200/70',
+        'Ressource':    'text-slate-600 bg-slate-100 border-slate-200'
+      };
+
+      const badgeClass = styles[appType] || 'text-indigo-700 bg-indigo-50 border-indigo-200/70';
+      return `<span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${badgeClass}">${appType}</span>`;
+    }
 
     // Chargement du JSON depuis GitHub avec contournement du cache
     async function loadAppsCatalog() {
@@ -349,7 +376,8 @@
         const matchSearch = !query ||
           app.titre.toLowerCase().includes(query) ||
           app.description.toLowerCase().includes(query) ||
-          (app.theme && app.theme.toLowerCase().includes(query));
+          (app.theme && app.theme.toLowerCase().includes(query)) ||
+          (app.type && app.type.toLowerCase().includes(query));
         return matchLevel && matchSearch;
       });
 
@@ -363,10 +391,7 @@
       emptyState.classList.add('hidden');
 
       filtered.forEach(app => {
-        const isExternal = app.url.startsWith('http');
-        const hostBadge = isExternal
-          ? `<span class="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200/60">App React / Netlify</span>`
-          : `<span class="text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">Page HTML / GitHub</span>`;
+        const hostBadge = getTechBadge(app);
 
         const levelsHtml = (app.niveaux || []).map(lvl =>
           `<span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">${lvl}</span>`
@@ -524,6 +549,7 @@
               <div class="flex items-center gap-2 flex-wrap">
                 <p class="font-bold text-sm text-slate-800 truncate">${app.titre}</p>
                 <span class="text-[11px] font-semibold text-blue-600">• ${app.theme}</span>
+                ${getTechBadge(app)}
               </div>
               <p class="text-xs text-slate-500 font-mono truncate mt-0.5">${app.url}</p>
               <div class="flex flex-wrap gap-1 mt-1.5">${levelsBadges}</div>
@@ -563,6 +589,7 @@
         theme: document.getElementById('field-theme').value.trim(),
         description: document.getElementById('field-desc').value.trim(),
         url: document.getElementById('field-url').value.trim(),
+        type: document.getElementById('field-type').value,
         icone: document.getElementById('field-icon').value,
         niveaux: selectedLevels.length > 0 ? selectedLevels : ["2nde", "1re Spé", "Terminale"]
       };
@@ -585,6 +612,7 @@
       document.getElementById('field-theme').value = app.theme || '';
       document.getElementById('field-desc').value = app.description || '';
       document.getElementById('field-url').value = app.url || '';
+      document.getElementById('field-type').value = app.type || (app.url && app.url.startsWith('http') ? 'React / Vite' : 'HTML / JS');
       document.getElementById('field-icon').value = app.icone || 'sparkles';
 
       document.querySelectorAll('#level-checkboxes input').forEach(cb => {
